@@ -1,39 +1,13 @@
+import { useState } from 'react'
 import { useEvents } from '@/hooks/useEvents'
-import { EventCard } from '@/components/EventCard'
+import { EventsGrid } from '@/components/EventsGrid'
 
 export default function EventsList() {
-  const { events, loading, error } = useEvents()
+  const [search, setSearch] = useState('')
+  const [category, setCategory] = useState('')
+  const [status, setStatus] = useState('')
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-lg">Loading events...</div>
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-lg text-destructive mb-2">Error loading events</div>
-          <div className="text-sm text-muted-foreground">{error}</div>
-        </div>
-      </div>
-    )
-  }
-
-  if (!events || events.length === 0) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-lg text-muted-foreground">No events found</div>
-        </div>
-      </div>
-    )
-  }
+  const { events, loading, error } = useEvents({ search, category, status })
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -47,11 +21,38 @@ export default function EventsList() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {events.map((event) => (
-            <EventCard key={event.id} event={event} />
-          ))}
+        <div className="mb-8 flex flex-col sm:flex-row gap-4">
+          <input
+            type="text"
+            placeholder="Search events..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="flex-1 px-4 py-3 border border-black font-semibold focus:outline-none focus:ring-2 focus:ring-black"
+          />
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="px-4 py-3 border border-black font-semibold focus:outline-none focus:ring-2 focus:ring-black bg-white"
+          >
+            <option value="">All Categories</option>
+            <option value="technology">Technology</option>
+            <option value="business">Business</option>
+            <option value="health">Health</option>
+            <option value="education">Education</option>
+            <option value="entertainment">Entertainment</option>
+          </select>
+          <select
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            className="px-4 py-3 border border-black font-semibold focus:outline-none focus:ring-2 focus:ring-black bg-white"
+          >
+            <option value="">All Status</option>
+            <option value="available">Available</option>
+            <option value="full">Full</option>
+          </select>
         </div>
+
+        <EventsGrid events={events} loading={loading} error={error} />
       </div>
     </div>
   )

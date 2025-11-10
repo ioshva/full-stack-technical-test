@@ -1,8 +1,22 @@
 import { useApi } from './useApi'
 import { EventsResponse } from '@/types/api'
 
-export function useEvents() {
-  const { data, loading, error } = useApi<EventsResponse>('/events')
+interface UseEventsParams {
+  category?: string
+  search?: string
+  status?: string
+}
+
+export function useEvents(params?: UseEventsParams) {
+  const queryParams = new URLSearchParams()
+
+  if (params?.category) queryParams.append('category', params.category)
+  if (params?.search) queryParams.append('search', params.search)
+  if (params?.status) queryParams.append('status', params.status)
+
+  const endpoint = `/events${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+
+  const { data, loading, error } = useApi<EventsResponse>(endpoint)
 
   return {
     events: data?.events ?? null,
