@@ -1,10 +1,14 @@
+import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useEvent } from '@/hooks/useEvent'
 import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { RegistrationModal } from '@/components/RegistrationModal'
 
 export default function EventDetail() {
   const { id } = useParams<{ id: string }>()
-  const { event, loading, error } = useEvent(id)
+  const { event, loading, error, refetch } = useEvent(id)
+  const [showRegistration, setShowRegistration] = useState(false)
 
   if (loading) {
     return (
@@ -45,6 +49,7 @@ export default function EventDetail() {
 
   const eventDate = new Date(event.date)
   const availableSpots = event.capacity.max - event.capacity.registered
+  const isPastEvent = eventDate < new Date()
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -116,14 +121,50 @@ export default function EventDetail() {
               </div>
             </div>
 
-            <div className="border-t border-black pt-8">
+            <div className="border-t border-black pt-8 mb-8">
               <h2 className="text-sm font-bold uppercase tracking-wider mb-4">About This Event</h2>
               <p className="text-gray-700 leading-relaxed whitespace-pre-wrap text-base">
                 {event.description}
               </p>
             </div>
+
+            {isPastEvent && (
+              <div className="mb-4 border border-black bg-gray-100 p-4 text-center">
+                <div className="text-sm font-semibold text-gray-700">
+                  This event has passed
+                </div>
+              </div>
+            )}
+
+            {!isPastEvent && availableSpots === 0 && (
+              <div className="mb-4 border border-black bg-gray-100 p-4 text-center">
+                <div className="text-sm font-semibold text-gray-700">
+                  This event has reached maximum capacity
+                </div>
+              </div>
+            )}
+
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button
+                size="lg"
+                onClick={() => setShowRegistration(true)}
+                disabled={availableSpots === 0 || isPastEvent}
+                className="flex-1 sm:flex-none sm:px-12 bg-black text-white hover:bg-black/90 border border-black font-bold disabled:bg-gray-400 disabled:opacity-50"
+              >
+                Register for Event
+              </Button>
+            </div>
           </CardContent>
         </Card>
+
+        <RegistrationModal
+          eventId={event.id}
+          eventTitle={event.title}
+          availableSpots={availableSpots}
+          open={showRegistration}
+          onOpenChange={setShowRegistration}
+          onRegistrationSuccess={refetch}
+        />
       </div>
     </div>
   )
