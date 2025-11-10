@@ -25,7 +25,10 @@ interface RegisterEventError {
   message: string
 }
 
-export function useRegisterEvent(eventId: string) {
+export function useRegisterEvent(
+  eventId: string,
+  onSuccess?: (eventId: string, registrationId: string) => void
+) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [data, setData] = useState<RegisterEventResponse | null>(null)
@@ -39,6 +42,11 @@ export function useRegisterEvent(eventId: string) {
         params
       )
       setData(response.data)
+
+      if (onSuccess) {
+        onSuccess(eventId, response.data.registrationId)
+      }
+
       return response.data
     } catch (err: any) {
       const errorData = err.response?.data as RegisterEventError

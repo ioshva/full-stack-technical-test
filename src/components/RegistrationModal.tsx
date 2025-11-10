@@ -16,6 +16,7 @@ interface RegistrationModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onRegistrationSuccess?: () => void
+  onRegisterTracking?: (eventId: string, registrationId: string) => void
 }
 
 export function RegistrationModal({
@@ -25,6 +26,7 @@ export function RegistrationModal({
   open,
   onOpenChange,
   onRegistrationSuccess,
+  onRegisterTracking,
 }: RegistrationModalProps) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -32,7 +34,7 @@ export function RegistrationModal({
   const [success, setSuccess] = useState(false)
   const [registrationId, setRegistrationId] = useState('')
 
-  const { registerForEvent, loading, error } = useRegisterEvent(eventId)
+  const { registerForEvent, loading, error } = useRegisterEvent(eventId, onRegisterTracking)
 
   const maxGroupSize = Math.min(50, availableSpots)
 

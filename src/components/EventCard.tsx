@@ -4,14 +4,20 @@ import { Card, CardContent } from '@/components/ui/card'
 
 interface EventCardProps {
   event: Event
+  referrer?: string
+  referrerLabel?: string
 }
 
-export function EventCard({ event }: EventCardProps) {
+export function EventCard({ event, referrer, referrerLabel }: EventCardProps) {
   const eventDate = new Date(event.date)
   const availableSpots = event.capacity.max - event.capacity.registered
 
   return (
-    <Link to={`/events/${event.id}`} className="block h-full">
+    <Link
+      to={`/events/${event.id}`}
+      state={{ from: referrer, label: referrerLabel }}
+      className="block h-full"
+    >
       <Card className="h-full border border-black hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer group bg-white">
         <CardContent className="p-6 flex flex-col h-full">
           <div

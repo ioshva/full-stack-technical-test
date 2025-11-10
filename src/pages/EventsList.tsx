@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useEvents } from '@/hooks/useEvents'
 import { EventsGrid } from '@/components/EventsGrid'
 
@@ -13,9 +14,16 @@ export default function EventsList() {
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-12">
         <div className="mb-14">
-          <h1 className="text-6xl md:text-7xl font-black text-black mb-4 tracking-tight">
-            Events
-          </h1>
+          <div className="flex justify-between items-start mb-4">
+            <h1 className="text-6xl md:text-7xl font-black text-black tracking-tight">
+              Events
+            </h1>
+            <Link to="/my-events">
+              <button className="px-6 py-3 bg-black text-white font-bold border border-black hover:bg-black/90 transition-colors">
+                My Events
+              </button>
+            </Link>
+          </div>
           <p className="text-xl font-semibold text-gray-700 max-w-2xl">
             Discover and register for exciting events
           </p>
@@ -52,7 +60,7 @@ export default function EventsList() {
           </select>
         </div>
 
-        <EventsGrid events={events} loading={loading} error={error} />
+        <EventsGrid events={events} loading={loading} error={error} referrer="/events" referrerLabel="Events" />
       </div>
     </div>
   )

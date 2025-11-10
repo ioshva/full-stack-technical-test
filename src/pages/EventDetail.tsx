@@ -1,14 +1,21 @@
 import { useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, useLocation, Link } from 'react-router-dom'
 import { useEvent } from '@/hooks/useEvent'
+import { useEventCache } from '@/hooks/useEventCache'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { RegistrationModal } from '@/components/RegistrationModal'
 
 export default function EventDetail() {
   const { id } = useParams<{ id: string }>()
+  const location = useLocation()
   const { event, loading, error, refetch } = useEvent(id)
+  const { isRegistered, addRegistration } = useEventCache()
   const [showRegistration, setShowRegistration] = useState(false)
+
+  const locationState = location.state as { from?: string; label?: string } | null
+  const backPath = locationState?.from || '/events'
+  const backLabel = locationState?.label ? `Back to ${locationState.label}` : 'Back to Events'
 
   if (loading) {
     return (
@@ -50,12 +57,47 @@ export default function EventDetail() {
   const eventDate = new Date(event.date)
   const availableSpots = event.capacity.max - event.capacity.registered
   const isPastEvent = eventDate < new Date()
+  const userAlreadyRegistered = isRegistered(event.id)
+
+  const renderStatusMessage = () => {
+    if (isPastEvent) {
+      return (
+        <div className="mb-4 border border-black bg-gray-100 p-4 text-center">
+          <div className="text-sm font-semibold text-gray-700">
+            This event has passed
+          </div>
+        </div>
+      )
+    }
+
+    if (userAlreadyRegistered) {
+      return (
+        <div className="mb-4 border border-black bg-green-50 p-4 text-center">
+          <div className="text-sm font-semibold text-green-700">
+            You are already registered for this event
+          </div>
+        </div>
+      )
+    }
+
+    if (availableSpots === 0) {
+      return (
+        <div className="mb-4 border border-black bg-gray-100 p-4 text-center">
+          <div className="text-sm font-semibold text-gray-700">
+            This event has reached maximum capacity
+          </div>
+        </div>
+      )
+    }
+
+    return null
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8 max-w-3xl">
-        <Link to="/events" className="inline-flex items-center text-sm font-semibold hover:underline mb-8 transition-all">
-          ← Back to Events
+        <Link to={backPath} className="inline-flex items-center text-sm font-semibold hover:underline mb-8 transition-all">
+          ← {backLabel}
         </Link>
 
         <Card className="border border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
@@ -128,27 +170,13 @@ export default function EventDetail() {
               </p>
             </div>
 
-            {isPastEvent && (
-              <div className="mb-4 border border-black bg-gray-100 p-4 text-center">
-                <div className="text-sm font-semibold text-gray-700">
-                  This event has passed
-                </div>
-              </div>
-            )}
-
-            {!isPastEvent && availableSpots === 0 && (
-              <div className="mb-4 border border-black bg-gray-100 p-4 text-center">
-                <div className="text-sm font-semibold text-gray-700">
-                  This event has reached maximum capacity
-                </div>
-              </div>
-            )}
+            {renderStatusMessage()}
 
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
                 size="lg"
                 onClick={() => setShowRegistration(true)}
-                disabled={availableSpots === 0 || isPastEvent}
+                disabled={availableSpots === 0 || isPastEvent || userAlreadyRegistered}
                 className="flex-1 sm:flex-none sm:px-12 bg-black text-white hover:bg-black/90 border border-black font-bold disabled:bg-gray-400 disabled:opacity-50"
               >
                 Register for Event
@@ -164,6 +192,7 @@ export default function EventDetail() {
           open={showRegistration}
           onOpenChange={setShowRegistration}
           onRegistrationSuccess={refetch}
+          onRegisterTracking={addRegistration}
         />
       </div>
     </div>
